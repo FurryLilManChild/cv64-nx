@@ -32,8 +32,9 @@ Saves, settings (`nx_options.txt`) and the shader cache are kept in `sdmc:/switc
 Press **Minus + Plus** together to open the **NX Options** menu (resolution, aspect ratio, frame rate,
 clock profile, volume, restart/quit).
 
-Controls follow the Nintendo Switch Online N64 layout: A/B as A/B, ZL as Z, L as L, R/ZR as R,
-Plus as Start, the right stick as the C buttons and the D-pad as the D-pad.
+Controls default to the Nintendo Switch Online N64 layout: A/B as A/B, ZL as Z, L as L, R/ZR as R,
+Plus as Start, the right stick as the C buttons and the D-pad as the D-pad. Every button can be
+remapped in NX Options > Settings > Controls.
 
 ## Building
 

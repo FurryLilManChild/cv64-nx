@@ -1,5 +1,6 @@
-// SDL GameController -> N64 pad for player 1. Layout follows PaperBoat-NX (NSO N64 convention):
-// A->A, B->B, ZL->Z, L->L, R/ZR->R, +->Start, right stick->C buttons, D-pad->D-pad.
+// SDL GameController -> N64 pad for player 1. Each Switch button presses the N64 button chosen in NX Options >
+// Controls; the defaults follow the NSO N64 convention: A->A, B->B, ZL->Z, L->L, R/ZR->R, +->Start,
+// right stick->C buttons, D-pad->D-pad.
 #include <atomic>
 #include <cmath>
 #include <cstdint>
@@ -80,23 +81,36 @@ namespace {
         return pad;
     }
 
+    // Index = choice of the Map* settings (N64_BUTTONS in nx_settings.cpp); 0 is Nothing.
+    constexpr uint16_t N64_BITS[] = {0, N64_A, N64_B, N64_Z, N64_L, N64_R, N64_START, N64_C_UP, N64_C_DOWN,
+                                     N64_C_LEFT, N64_C_RIGHT, N64_DPAD_UP, N64_DPAD_DOWN, N64_DPAD_LEFT, N64_DPAD_RIGHT};
+
     uint16_t to_n64_buttons(const NxPad& pad) {
-        struct Binding { uint32_t nx; uint16_t n64; };
+        struct Binding { uint32_t nx; nx::Setting setting; };
         static constexpr Binding bindings[] = {
-            {NX_A, N64_A}, {NX_B, N64_B}, {NX_ZL, N64_Z}, {NX_L, N64_L}, {NX_R, N64_R}, {NX_ZR, N64_R},
-            {NX_PLUS, N64_START}, {NX_UP, N64_DPAD_UP}, {NX_DOWN, N64_DPAD_DOWN}, {NX_LEFT, N64_DPAD_LEFT},
-            {NX_RIGHT, N64_DPAD_RIGHT},
+            {NX_A, nx::Setting::MapA}, {NX_B, nx::Setting::MapB}, {NX_X, nx::Setting::MapX}, {NX_Y, nx::Setting::MapY},
+            {NX_L, nx::Setting::MapL}, {NX_R, nx::Setting::MapR}, {NX_ZL, nx::Setting::MapZL}, {NX_ZR, nx::Setting::MapZR},
+            {NX_PLUS, nx::Setting::MapPlus}, {NX_MINUS, nx::Setting::MapMinus}, {NX_UP, nx::Setting::MapUp},
+            {NX_DOWN, nx::Setting::MapDown}, {NX_LEFT, nx::Setting::MapLeft}, {NX_RIGHT, nx::Setting::MapRight},
+            {NX_LSTICK, nx::Setting::MapLStick}, {NX_RSTICK, nx::Setting::MapRStick},
         };
         uint16_t buttons = 0;
         for (const Binding& binding : bindings) {
             if (pad.buttons & binding.nx) {
-                buttons |= binding.n64;
+                const int choice = nx::get(binding.setting);
+                if (choice > 0 && choice < static_cast<int>(sizeof(N64_BITS) / sizeof(N64_BITS[0]))) {
+                    buttons |= N64_BITS[choice];
+                }
             }
         }
-        if (pad.rx < -C_BUTTON_THRESHOLD) buttons |= N64_C_LEFT;
-        if (pad.rx > C_BUTTON_THRESHOLD) buttons |= N64_C_RIGHT;
-        if (pad.ry > C_BUTTON_THRESHOLD) buttons |= N64_C_UP;
-        if (pad.ry < -C_BUTTON_THRESHOLD) buttons |= N64_C_DOWN;
+        const int stick = nx::get(nx::Setting::RightStick);  // 0 C buttons, 1 D-pad, 2 nothing
+        if (stick < 2) {
+            const bool c = stick == 0;
+            if (pad.rx < -C_BUTTON_THRESHOLD) buttons |= c ? N64_C_LEFT : N64_DPAD_LEFT;
+            if (pad.rx > C_BUTTON_THRESHOLD) buttons |= c ? N64_C_RIGHT : N64_DPAD_RIGHT;
+            if (pad.ry > C_BUTTON_THRESHOLD) buttons |= c ? N64_C_UP : N64_DPAD_UP;
+            if (pad.ry < -C_BUTTON_THRESHOLD) buttons |= c ? N64_C_DOWN : N64_DPAD_DOWN;
+        }
         return buttons;
     }
 
@@ -148,11 +162,6 @@ bool cvnx_get_input(int controller_num, uint16_t* buttons, float* x, float* y) {
     }
     NxPad pad;
     const bool connected = read_game_pad(&pad);
-    if (nx::get(nx::Setting::FaceButtons) != 0) {
-        const uint32_t a = pad.buttons & NX_A;
-        const uint32_t b = pad.buttons & NX_B;
-        pad.buttons = (pad.buttons & ~(NX_A | NX_B)) | (a ? NX_B : 0) | (b ? NX_A : 0);
-    }
     pad.buttons = start_filter.apply(pad.buttons, SDL_GetTicks64());
     *buttons = to_n64_buttons(pad);
     *x = pad.lx;

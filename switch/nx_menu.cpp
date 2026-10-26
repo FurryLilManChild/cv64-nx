@@ -57,7 +57,9 @@ namespace {
         Setting::ShowFps, Setting::PerformanceOverlay, Setting::InputViewer,
         Setting::FrameRate, Setting::ClockProfile,
         Setting::MasterVolume,
-        Setting::FaceButtons,
+        Setting::MapA, Setting::MapB, Setting::MapX, Setting::MapY, Setting::MapL, Setting::MapR,
+        Setting::MapZL, Setting::MapZR, Setting::MapPlus, Setting::MapMinus, Setting::MapUp, Setting::MapDown,
+        Setting::MapLeft, Setting::MapRight, Setting::MapLStick, Setting::MapRStick, Setting::RightStick,
         Setting::MenuTheme, Setting::MenuOpacity, Setting::MenuSize,
     };
     // Cheats are listed by group, the text before the first " / " of their name: these first, in this order (the
