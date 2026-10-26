@@ -157,6 +157,9 @@ target_link_libraries(cv64recomp PRIVATE
     nx
 )
 
+# recomp_puts comes from frontend_switch.cpp (silent); upstream's writes each character to stdout.
+set_source_files_properties(${ROOT}/src/game/recomp_api.cpp PROPERTIES COMPILE_DEFINITIONS "recomp_puts=cvnx_upstream_recomp_puts")
+
 nx_generate_nacp(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cv64recomp.nacp
     NAME "Castlevania 64: Recompiled"

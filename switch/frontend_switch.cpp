@@ -51,3 +51,8 @@ int banjo::get_bgm_volume() { return 100; }
 
 // Pumps RmlUi callbacks registered by mods; there is no RmlUi on Switch.
 extern "C" void recomp_run_ui_callbacks(uint8_t*, recomp_context*) {}
+
+// The PC port's patches print debug text every frame through recomp_puts, one character at a time. On Switch stdout
+// is the unbuffered log on the SD card, so that was hundreds of SD writes per frame on the game thread. The game's
+// own text goes nowhere here; src/game/recomp_api.cpp's version is renamed away in switch/CMakeLists.txt.
+extern "C" void recomp_puts(uint8_t*, recomp_context*) {}

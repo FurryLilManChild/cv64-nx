@@ -162,7 +162,8 @@ bool cvnx_get_input(int controller_num, uint16_t* buttons, float* x, float* y) {
 
 ultramodern::input::connected_device_info_t cvnx_get_connected_device_info(int controller_num) {
     if (controller_num == 0) {
-        return {ultramodern::input::Device::Controller, ultramodern::input::Pak::RumblePak};
+        // CV64 saves to a Controller Pak (the PC port reports one too); the runtime keeps it in the save file.
+        return {ultramodern::input::Device::Controller, ultramodern::input::Pak::ControllerPak};
     }
     return {ultramodern::input::Device::None, ultramodern::input::Pak::None};
 }

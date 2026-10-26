@@ -48,9 +48,9 @@ namespace nx {
     // Value at startup, for the settings that need a restart: what the renderer is actually using.
     int at_startup(Setting setting);
 
-    inline int resolution_factor() { return at_startup(Setting::Resolution) + 2; }
+    inline int resolution_factor() { return at_startup(Setting::Resolution) + 1; }
     // 4x (experimental) draws into a 1920x1080 window instead of 1280x720.
-    inline bool output_1080p() { return at_startup(Setting::Resolution) == 2; }
+    inline bool output_1080p() { return at_startup(Setting::Resolution) == 3; }
     inline int screen_width() { return output_1080p() ? 1920 : 1280; }
     inline int screen_height() { return output_1080p() ? 1080 : 720; }
     inline bool widescreen() { return at_startup(Setting::AspectRatio) == 0; }

@@ -106,6 +106,32 @@ namespace {
         return true;
     }
 
+    // A line in the log every 5 seconds: display lists (game frames) and screen presents per second, and the average
+    // GLideN64 time per display list, to tell a slow game thread from a slow renderer in testers' logs.
+    std::atomic<uint32_t> presents{0};
+    uint64_t pass1_sum_us = 0;
+    uint32_t pass1_samples = 0;
+    uint32_t pass1_max_us = 0;
+    void log_perf(uint32_t pass1_us) {
+        static uint64_t last = 0;
+        static uint32_t last_dl = 0, last_presents = 0;
+        pass1_sum_us += pass1_us;
+        pass1_samples++;
+        if (pass1_us > pass1_max_us) pass1_max_us = pass1_us;
+        const uint64_t now = armGetSystemTick();
+        if (last == 0) { last = now; return; }
+        const uint64_t ns = armTicksToNs(now - last);
+        if (ns < 5000000000ull) return;
+        const uint32_t dl = cvnx_dl_count.load(), shown = presents.load();
+        const double seconds = ns / 1e9;
+        std::printf("[CVNX] perf: %.1f frames/s, %.1f presents/s, gfx %.1f ms avg %.1f ms max per frame, CPU %s\n",
+                    (dl - last_dl) / seconds, (shown - last_presents) / seconds,
+                    pass1_samples ? pass1_sum_us / 1000.0 / pass1_samples : 0.0, pass1_max_us / 1000.0,
+                    appletGetOperationMode() == AppletOperationMode_Handheld ? "handheld" : "docked");
+        last = now; last_dl = dl; last_presents = shown;
+        pass1_sum_us = 0; pass1_samples = 0; pass1_max_us = 0;
+    }
+
     void sample_memory() {
         static uint64_t last = 0;
         static uint64_t last_log = 0;
@@ -280,6 +306,7 @@ namespace {
             cvnx_dl_us2_ring[dl_index % 512] = cvnx_pass2_us;
             CVNX_TIME(0, start);
             sample_memory();
+            log_perf(cvnx_pass1_us);
         }
 
         void send_dummy_workload(uint32_t) override {}
@@ -294,6 +321,7 @@ namespace {
             if (cvnx_interp_present_in_between(origin)) {
                 CVNX_SHOWN(origin, true);
                 UpdateScreen();
+                presents++;
                 cvnx_interp_present_done();
                 held_presents = 0;
                 presented_origin = origin;
@@ -307,6 +335,7 @@ namespace {
                 [[maybe_unused]] const uint64_t start = armGetSystemTick();
                 CVNX_SHOWN(origin, false);
                 UpdateScreen();
+                presents++;
                 CVNX_TIME(1, start);
             }
         }
