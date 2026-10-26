@@ -1,0 +1,18 @@
+[submodule "CV64Syms"]
+	path = CV64Syms
+	url = https://github.com/RevoSucks/CV64Syms.git
+[submodule "lib/N64ModernRuntime"]
+	path = lib/N64ModernRuntime
+	url = https://github.com/DankZoneStudios/N64ModernRuntime.git
+[submodule "lib/RecompFrontend"]
+	path = lib/RecompFrontend
+	url = https://github.com/N64Recomp/RecompFrontend.git
+[submodule "lib/rt64"]
+	path = lib/rt64
+	url = https://github.com/DankZoneStudios/rt64.git
+[submodule "lib/cv64"]
+	path = lib/cv64
+	url = https://github.com/DankZoneStudios/cv64.git
+[submodule "lib/GLideN64"]
+	path = lib/GLideN64
+	url = https://github.com/gonetz/GLideN64
